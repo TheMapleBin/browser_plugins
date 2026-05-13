@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "书签",
+  "version": "0.1.1",
+  "description": "极简书签搜索与打开工具。只读取书签数据，不上传任何信息。",
+  "permissions": ["bookmarks", "favicon"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';"
+  },
+  "action": {
+    "default_title": "书签",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,154 @@
+/* Quick History — Popup 样式 */
+/* 统一视觉语言：圆角搜索框、单行省略、暗黑模式、轻微 hover */
+
+:root {
+  --bg: rgba(255, 255, 255, 0.9);
+  --panel: rgba(255, 255, 255, 0.72);
+  --text: #111827;
+  --muted: #6b7280;
+  --border: rgba(0, 0, 0, 0.08);
+  --hover: rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: rgba(17, 24, 39, 0.94);
+    --panel: rgba(31, 41, 55, 0.78);
+    --text: #f9fafb;
+    --muted: #9ca3af;
+    --border: rgba(255, 255, 255, 0.1);
+    --hover: rgba(255, 255, 255, 0.08);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 380px;
+  max-height: 550px;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  backdrop-filter: blur(10px);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app {
+  min-height: 520px;
+  padding: 14px;
+}
+
+.header {
+  margin-bottom: 12px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.search-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-bottom: 10px;
+  background: var(--bg);
+}
+
+#search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  outline: none;
+}
+
+#search-input:focus {
+  border-color: rgba(59, 130, 246, 0.55);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 8px 10px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.history-item:hover {
+  background: var(--hover);
+  border-color: var(--border);
+}
+
+.item-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.item-title,
+.item-url,
+.item-meta {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.item-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.item-url,
+.item-meta {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.footer button {
+  width: 100%;
+  height: 36px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.empty-state {
+  padding: 48px 16px;
+  color: var(--muted);
+  text-align: center;
+}

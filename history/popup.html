@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick History</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <h1>Quick History</h1>
+        <p id="count-text">加载中...</p>
+      </div>
+    </header>
+
+    <section class="search-wrap">
+      <input
+        id="search-input"
+        type="search"
+        placeholder="搜索历史记录..."
+        autocomplete="off"
+      />
+    </section>
+
+    <section id="history-list" class="history-list"></section>
+
+    <footer class="footer">
+      <button id="open-full-history" type="button">查看全部记录</button>
+    </footer>
+
+    <section id="empty-state" class="empty-state" hidden>
+      <div class="empty-icon">⌕</div>
+      <p>没有找到匹配的历史记录</p>
+    </section>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>
