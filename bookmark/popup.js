@@ -10,6 +10,7 @@ const countText = document.getElementById('count-text');
 
 const MAX_RENDER = 100;       // 最多渲染条数，避免 popup DOM 过重
 const DEBOUNCE_MS = 120;      // 搜索防抖延迟
+const VISIBLE_LIMIT = 10;     // 标签栏最大可见数量
 
 let allBookmarks = [];
 
@@ -65,24 +66,37 @@ function flattenBookmarks(rootNodes) {
   return result;
 }
 
-// ---- 安全 URL 验证 ----
-// 只允许 http/https 协议，拒绝 javascript:、data:、file: 等危险协议
-function validateUrl(rawUrl) {
+// ---- URL 解析 & 验证 ----
+// 拆分为两个校验函数：打开用（允许 chrome://）、favicon 用（仅 http/https）
+
+const OPENABLE_PROTOCOLS = new Set(['http:', 'https:', 'chrome:']);
+const FAVICON_PROTOCOLS = new Set(['http:', 'https:']);
+
+function parseUrl(rawUrl) {
+  if (typeof rawUrl !== 'string') return null;
   try {
-    const parsed = new URL(rawUrl);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return null;
-    }
-    return parsed.href;
+    return new URL(rawUrl.trim());
   } catch {
     return null;
   }
 }
 
+function validateOpenUrl(rawUrl) {
+  const parsed = parseUrl(rawUrl);
+  if (!parsed || !OPENABLE_PROTOCOLS.has(parsed.protocol)) return null;
+  return parsed.href;
+}
+
+function validateFaviconUrl(rawUrl) {
+  const parsed = parseUrl(rawUrl);
+  if (!parsed || !FAVICON_PROTOCOLS.has(parsed.protocol)) return null;
+  return parsed.href;
+}
+
 // ---- favicon URL 构造 ----
-// 使用 Chrome MV3 的 _favicon 路径，避免依赖外部 favicon 服务
+// 使用 Chrome MV3 的 _favicon 路径，仅适用于 http/https
 function getFaviconUrl(rawUrl) {
-  const validUrl = validateUrl(rawUrl);
+  const validUrl = validateFaviconUrl(rawUrl);
   if (!validUrl) return null;
 
   try {
@@ -118,14 +132,37 @@ function escapeSvgText(text) {
 }
 
 // ---- URL 简化显示 ----
-function simplifyUrl(url) {
-  try {
-    const parsed = new URL(url);
-    const pathname = parsed.pathname.replace(/\/$/, '');
-    return parsed.hostname + pathname;
-  } catch {
-    return url;
+function simplifyUrl(rawUrl) {
+  const parsed = parseUrl(rawUrl);
+  if (!parsed) return rawUrl || '';
+
+  if (parsed.protocol === 'chrome:') {
+    const path = parsed.pathname.replace(/\/$/, '');
+    return `chrome://${parsed.hostname}${path}`;
   }
+
+  const pathname = parsed.pathname.replace(/\/$/, '');
+  return parsed.hostname + pathname;
+}
+
+// ---- 动态调节列表卡片高度 ----
+function getCssPxValue(varName) {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return Number.parseFloat(raw) || 0;
+}
+
+function updateListCardHeight(bookmarkCount) {
+  const itemHeight = getCssPxValue('--bookmark-item-height');
+  const emptyHeight = getCssPxValue('--bookmark-empty-height');
+
+  let targetHeight;
+  if (bookmarkCount === 0) {
+    targetHeight = emptyHeight;
+  } else {
+    targetHeight = Math.min(bookmarkCount, VISIBLE_LIMIT) * itemHeight;
+  }
+
+  document.documentElement.style.setProperty('--bookmark-current-list-height', `${targetHeight}px`);
 }
 
 // ---- 渲染书签列表 ----
@@ -133,6 +170,8 @@ function renderBookmarks(bookmarks) {
   while (listEl.firstChild) {
     listEl.removeChild(listEl.firstChild);
   }
+
+  updateListCardHeight(bookmarks.length);
 
   countText.textContent = `${bookmarks.length} 个书签`;
   emptyState.hidden = bookmarks.length > 0;
@@ -183,11 +222,11 @@ function createBookmarkItem(bookmark) {
   item.append(icon, main);
 
   item.addEventListener('click', async () => {
-    const safeUrl = validateUrl(bookmark.url);
-    if (!safeUrl) return;
+    const openUrl = validateOpenUrl(bookmark.url);
+    if (!openUrl) return;
 
     try {
-      await chrome.tabs.create({ url: safeUrl });
+      await chrome.tabs.create({ url: openUrl });
       window.close();
     } catch (err) {
       console.error('打开标签页失败:', err);
